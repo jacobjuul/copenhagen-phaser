@@ -22,22 +22,21 @@ const BG_HEIGHT = 11994,
 const CAR_TURN = {
   first:  { y: 1368, xTo: 1474, yTo: 1779 },
   second: { y: 4464, xTo: 751,  yTo: 4891 },
-  third:  { y: 7437, xTo: 960,  yTo: 7692 },
+  third:  { y: 7437, xTo: 1756,  yTo: 7815 },
   fourth: { y: 7692, xTo: 1380, yTo: 7692 },
-}
+};
 
 const START_POS = {
   car:    { x: 900,   y: 800 },
   taxi:   { x: 1000,  y: 100 },
   train:  { x: 800,   y: 100 },
   bike:   { x: 1200,  y: 100 },
-
 };
 
 let speed = {
   car: 1000,
   bike: 600,
-}
+};
 
 var game = new Phaser.Game($(window).width(), $(window).height(), Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
 
@@ -50,6 +49,7 @@ function preload() {
 }
 
 function create() {
+
   game.renderer.clearBeforeRender = false;
   game.renderer.roundPixels = true;
 
@@ -78,7 +78,6 @@ function create() {
     }
   }
 
-
   cursors = game.input.keyboard.createCursorKeys();
   game.camera.follow(car);
   car.body.drag.set(2500 * scale);
@@ -88,29 +87,24 @@ function create() {
 
 }
 
-
 function mouseWheel(event) {
   switch (game.input.mouse.wheelDelta) {
 
     case 1:
       scrolling.up = true;
       scrolling.down = false;
-
       break;
-
 
     case -1:
       scrolling.up = false;
       scrolling.down = true;
+      break;
 
     default:
-
 
   };
 
 }
-
-
 
 function update() {
   game.physics.arcade.collide(car, train);
@@ -121,24 +115,7 @@ function update() {
   let carWithinFirst = car.position.y >= CAR_TURN.first.y * scale && car.position.y <= CAR_TURN.first.yTo * scale;
   let carWithinSecond = car.position.y >= CAR_TURN.second.y * scale && car.position.y <= CAR_TURN.second.yTo * scale;
   let carWithinThird = car.position.y >= CAR_TURN.third.y * scale && car.position.y <= CAR_TURN.third.yTo * scale;
-  let carWithinFourth = false;
-
-  if (car.position.y > CAR_TURN.first.y * scale && car.position.y < CAR_TURN.first.yTo * scale) {
-    scrolling.down = true;
-  } 
-
-  if (car.position.y > CAR_TURN.second.y * scale && car.position.y < CAR_TURN.second.yTo * scale) {
-    scrolling.down = true;
-  }  
-
-  if (car.position.y > CAR_TURN.third.y * scale && car.position.y < CAR_TURN.third.yTo * scale) {
-    scrolling.down = true;
-  }  
-
-  if (car.position.y >= CAR_TURN.fourth.y * scale && car.position.y <= CAR_TURN.fourth.yTo * scale) {
-    scrolling.down = true;
-  } 
-  
+  let carWithinFourth = car.position.x >= CAR_TURN.third.xTo * scale && car.position.y >= CAR_TURN.third.yTo * scale && !carWithinThird && !carWithinFirst && !carWithinSecond;
 
   if (scrolling.down) {
    
@@ -146,7 +123,7 @@ function update() {
     if (carWithinFirst) {
       let rotation = game.physics.arcade.angleToXY(car, CAR_TURN.first.xTo * scale, CAR_TURN.first.yTo * scale);
       console.log(rotation)
-      car.rotation = -rotation - 0.5;
+      car.rotation = rotation - 1.57;
       game.physics.arcade.velocityFromRotation(rotation, speed.car * scale, car.body.velocity);
 
     } else {
@@ -159,22 +136,17 @@ function update() {
       let rotation = game.physics.arcade.angleToXY(car, CAR_TURN.second.xTo * scale, CAR_TURN.second.yTo * scale);
       console.log(rotation);
 
-      car.rotation = (-rotation * -rotation + 0.5);
+      // car.rotation = (-rotation * -rotation + 0.5);
+      car.rotation = rotation - 1.57;
       game.physics.arcade.velocityFromRotation(rotation, speed.car * scale, car.body.velocity);
     }
 
     // Third movement Point
     if (carWithinThird) {
       let rotation = game.physics.arcade.angleToXY(car, CAR_TURN.third.xTo * scale, CAR_TURN.third.yTo * scale);
-      console.log(rotation)
-      car.rotation = -rotation - 0.5;
+      console.log(rotation);
+      car.rotation = rotation - 1.57;
       game.physics.arcade.velocityFromRotation(rotation, speed.car * scale, car.body.velocity);
-    }
-
-    // Fourth movement point
-    if (carWithinFourth) {
-      
-      game.physics.arcade.velocityFromRotation(-1.5, speed.car * scale, car.body.velocity);
     }
     
     scrolling.down = false;
@@ -183,6 +155,8 @@ function update() {
   }
 
   if (scrolling.up) {
+
+    // this.game.state.start("start"); 
     
     //  Move to the left
     car.body.velocity.y = -speed.car * scale;
